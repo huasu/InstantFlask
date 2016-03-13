@@ -1,8 +1,23 @@
+import random
 from flask import Flask, make_response
 from flask import request
+from flask import g
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
+
+### g object: temporary during the request
+@app.before_request
+def set_on_g_object():
+    x = random.randint(0, 9)
+    app.logger.debug('before request: g.x is {x}'.format(x=x))
+    g.x = x
+
+@app.after_request
+def get_on_g_object(response):
+    app.logger.debug(
+        'after request: g.x is {g.x}'.format(g=g))
+    return response
 
 ### Before and after requests
 def dump_request_detail(request):
