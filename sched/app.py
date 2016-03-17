@@ -1,10 +1,38 @@
-from flask import Flask, url_for
+import os
+import os.path
+from flask import Flask, url_for, send_from_directory, request
+from flask.ext.sqlalchemy import SQLAlchemy
+from sched.models import Base
+from werkzeug import secure_filename
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sched.db'
+assets_folder = os.path.join(app.root_path, 'static')
+FILE_FOLDER = assets_folder
+db=SQLAlchemy(app)
+db.Model = Base
+
 
 @app.route('/')
 def hello():
     return 'Hello, world!'
+
+
+### files
+@app.route('/upload/<path:filename>', methods=['GET'])
+def assets(filename):
+    return send_from_directory(assets_folder, filename)
+
+@app.route('/upload/<path:filename>', methods=['POST'])
+def file_attach(filename):
+    filestorage = request.files['file']
+    # Don't allow '..' in filename
+    filename = secure_filename(filestorage.filename)
+    dest = os.path.join(FILE_FOLDER, filename)
+    filestorage.save(dest)
+    return 'File transferred.'
+
+###
 
 @app.route('/appointments/')
 def appointment_list():
