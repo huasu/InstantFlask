@@ -1,22 +1,24 @@
 import os
-import os.path
+# import os.path
 from flask import Flask, url_for, send_from_directory, request
 from flask.ext.sqlalchemy import SQLAlchemy
 from sched.models import Base
 from werkzeug import secure_filename
 
+from flask import render_template ## Jinja templating
+
 app = Flask(__name__, static_folder='static')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sched.db'
-assets_folder = os.path.join(app.root_path, 'static')
-FILE_FOLDER = assets_folder
 db=SQLAlchemy(app)
 db.Model = Base
 
+assets_folder = os.path.join(app.root_path, 'static')
+FILE_FOLDER = assets_folder
+TEMPLATES_FOLDER = assets_folder
 
 @app.route('/')
 def hello():
     return 'Hello, world!'
-
 
 ### files
 @app.route('/upload/<path:filename>', methods=['GET'])
@@ -31,6 +33,11 @@ def file_attach(filename):
     dest = os.path.join(FILE_FOLDER, filename)
     filestorage.save(dest)
     return 'File transferred.'
+
+### templating
+@app.route('/templated/<path:filename>')
+def jinja(filename):
+    return render_template(filename)
 
 ###
 
@@ -65,8 +72,6 @@ def appointment_create():
     methods=['DELETE'])
 def appointment_delete(appointment_id):
     raise NotImplememntedError('DELETE')
-
-
 
 
 
